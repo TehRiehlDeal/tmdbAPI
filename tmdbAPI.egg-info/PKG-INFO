@@ -1,0 +1,28 @@
+Metadata-Version: 2.1
+Name: tmdbAPI
+Version: 0.1.0
+Summary: Python Module for accessing the TVDB API
+Home-page: https://github.com/TehRiehlDeal/tmdbAPI
+Author: Kevin Riehl
+Author-email: kevinriehl@gmail.com
+License: MIT
+Description: # tmdbAPI
+        This is an API library for use when connecting to The TVDB.
+        
+        ## How to Use
+        ```
+        from tmdbAPI import TMDB
+        
+        t = TMDB()
+        
+        # Get basic info about a show
+        t.getShow("Mythbusters")
+        
+        # Get a specific episodes name
+        t.getEpisodeName("Scrubs", 1, 1)
+        ```
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

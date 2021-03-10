@@ -1,0 +1,8 @@
+README.md
+setup.py
+tmdbAPI.py
+tmdbAPI.egg-info/PKG-INFO
+tmdbAPI.egg-info/SOURCES.txt
+tmdbAPI.egg-info/dependency_links.txt
+tmdbAPI.egg-info/requires.txt
+tmdbAPI.egg-info/top_level.txt
