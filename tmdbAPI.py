@@ -83,9 +83,7 @@ class TMDB:
 
     def _getEpisodeName(self, id, seasonNum, epNum):
         url = self.config['episodeEndpoint'].format(baseURL=self.config['apiURL'], tv_id=id, season_number=seasonNum, episode_number=epNum, apikey=self.config['apikey'])
-        print(url)
         r = self.session.get(url, headers=self.headers).json()
-        print(r)
         error = r.get('Error')
         if error:
             raise NoSuchEpisode("No episode could be found. Please check season or episode number and try again.")
