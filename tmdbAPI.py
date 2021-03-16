@@ -51,7 +51,6 @@ class TMDB:
             raise InvalidInput("You have entered an invalid name. Please try again.")
         url = self.config['tvSearchEndpoint'].format(baseURL=self.config['apiURL'], apikey=self.config['apikey'], showTitle=name)
         r = self.session.get(url, headers=self.headers).json()
-        print(r)
         error = r.get('Error')
         if error:
             raise ShowNotFound("Show was not found, please try again")
