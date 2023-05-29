@@ -6,8 +6,8 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md')) as f:
     longDescription = f.read()
 
-with open(path.join(here, 'requirements.txt')) as f:
-    requirements = f.read().split('\n')
+# with open(path.join(here, 'requirements.txt')) as f:
+#     requirements = f.read().split('\n')
 
 setup(
     name="tmdbAPI",
