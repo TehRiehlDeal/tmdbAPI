@@ -1,30 +1,42 @@
 import requests
 import sanction
+from classes.search import Search
 from difflib import SequenceMatcher
 
-#Exceptions
+# Exceptions
+
+
 class Error(Exception):
     pass
+
 
 class InvalidCredentials(Error):
     pass
 
+
 class ShowNotFound(Error):
     pass
+
 
 class NoSuchEpisode(Error):
     pass
 
+
 class InvalidShowID(Error):
     pass
+
 
 class InvalidInput(Error):
     pass
 
+
 class NoActorsFound(Error):
     pass
+
+
 class NoImagesFound(Error):
     pass
+
 
 class TMDB:
 
@@ -41,38 +53,26 @@ class TMDB:
 
         self.config['apiURL'] = "https://api.themoviedb.org/3"
 
-        self.config['tvSearchEndpoint'] = "{baseURL}/search/tv?language=en-US&query={showTitle}"
-
         self.config['episodeEndpoint'] = "{baseURL}/tv/{tv_id}/season/{season_number}/episode/{episode_number}?language=en-US"
 
         self.session = requests.Session()
 
-    def getShow(self, name):
-        if type(name) is not str:
-            raise InvalidInput("You have entered an invalid name. Please try again.")
-        url = self.config['tvSearchEndpoint'].format(baseURL=self.config['apiURL'], apikey=self.config['apikey'], showTitle=name)
-        r = self.session.get(url, headers=self.headers).json()
-        error = r.get('total_results') == 0
-        if error:
-            raise ShowNotFound("Show was not found, please try again")
-        return r
+        self.search = Search(apikey=apikey, session=self.session)
 
-    def getEpisodeName(self, name, seasonNum, epNum, accuracy = 0.8, id = None):
+    def getEpisodeName(self, name, seasonNum, epNum, accuracy=0.8, id=None):
         if type(name) is not str or type(seasonNum) is not int or type(epNum) is not int or seasonNum < 0 or epNum < 1:
             raise InvalidInput(
                 "You have entered an invalid name. Please try again.")
         if (id == None):
-            id = self._getShowID(name,accuracy)
+            id = self._getShowID(name, accuracy)
         else:
             return self._getEpisodeName(id, seasonNum, epNum)
         if id == -1:
             raise InvalidShowID
         return self._getEpisodeName(id, seasonNum, epNum)
 
-
     def _getShowID(self, name, accuracy=0.8):
-        url = self.config['tvSearchEndpoint'].format(baseURL=self.config['apiURL'], apikey=self.config['apikey'], showTitle=name)
-        r = self.session.get(url, headers=self.headers).json()
+        r = self.search.searchTV(name).json()
         error = r.get('Error')
         if error:
             raise ShowNotFound
@@ -82,14 +82,16 @@ class TMDB:
         return -1
 
     def _getEpisodeName(self, id, seasonNum, epNum):
-        url = self.config['episodeEndpoint'].format(baseURL=self.config['apiURL'], tv_id=id, season_number=seasonNum, episode_number=epNum, apikey=self.config['apikey'])
+        url = self.config['episodeEndpoint'].format(
+            baseURL=self.config['apiURL'], tv_id=id, season_number=seasonNum, episode_number=epNum)
         r = self.session.get(url, headers=self.headers).json()
         error = r.get('Error')
         if error:
-            raise NoSuchEpisode("No episode could be found. Please check season or episode number and try again.")
+            raise NoSuchEpisode(
+                "No episode could be found. Please check season or episode number and try again.")
         return self._cleanName(r["name"])
 
     def _cleanName(self, name):
-        newName = name.replace('\\', "").replace("/", "").replace(":", "").replace("*", "").replace("?", "").replace('"', "").replace("<", "").replace(">", "").replace("|", "").replace("\t","")
-        return newName 
-    
+        newName = name.replace('\\', "").replace("/", "").replace(":", "").replace("*", "").replace(
+            "?", "").replace('"', "").replace("<", "").replace(">", "").replace("|", "").replace("\t", "")
+        return newName
