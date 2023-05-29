@@ -11,7 +11,7 @@ with open(path.join(here, 'requirements.txt')) as f:
 
 setup(
     name="tmdbAPI",
-    version="0.1.2",
+    version="0.1.3",
     author="Kevin Riehl",
     author_email="kevinriehl@gmail.com",
     description="Python Module for accessing the TVDB API",
