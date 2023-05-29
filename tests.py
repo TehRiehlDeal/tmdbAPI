@@ -13,7 +13,7 @@ class TestSearch(unittest.TestCase):
         self.t.session.close()
 
     def testCollectionSearch(self):
-        assert type(self.t.search.searchCollection("Thriller")) == dict
+        assert type(self.t.search.searchCollection("Action")) == dict
 
     def testCollectionError(self):
         with self.assertRaises(CollectionNotFound):
