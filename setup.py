@@ -18,7 +18,7 @@ setup(
     long_description=longDescription,
     long_description_content_type="text/markdown",
     py_modules=['tmdbAPI'],
-    install_requires=requirements,
+    install_requires=['requests >= 2.22.0', 'sanction >= 0.4.1'],
     license="MIT",
     url="https://github.com/TehRiehlDeal/tmdbAPI",
     classifiers=[
