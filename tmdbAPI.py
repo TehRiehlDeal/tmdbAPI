@@ -72,7 +72,7 @@ class TMDB:
         return self._getEpisodeName(id, seasonNum, epNum)
 
     def _getShowID(self, name, accuracy=0.8):
-        r = self.search.searchTV(name).json()
+        r = self.search.searchTV(name)
         error = r.get('Error')
         if error:
             raise ShowNotFound
