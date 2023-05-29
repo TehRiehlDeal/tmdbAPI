@@ -4,7 +4,7 @@ import unittest
 import sys
 sys.path.append("..")
 
-class SearchTest(unittest.TestCase):
+class TestSearch(unittest.TestCase):
 
     def setUp(self):
         self.t = TMDB()
@@ -12,52 +12,52 @@ class SearchTest(unittest.TestCase):
     def tearDown(self):
         self.t.session.close()
 
-    def collectionSearchTest(self):
+    def testCollectionSearch(self):
         assert type(self.t.search.searchCollection("Thriller")) == dict
 
-    def collectionErrorTest(self):
+    def testCollectionError(self):
         with self.assertRaises(CollectionNotFound):
             self.t.search.searchCollection('TESTSETETS')
 
-    def companySearchTest(self):
+    def testCompanySearch(self):
         assert type(self.t.search.searchCompany("Warner")) == dict
 
-    def companyErrorTest(self):
+    def testCompanyError(self):
         with self.assertRaises(CompanyNotFound):
             self.t.search.searchCompany('TESTSETETS')
 
-    def keywordSearchTest(self):
+    def testKeywordSearch(self):
         assert type(self.t.search.searchKeyword("Thriller")) == dict
 
-    def keywordErrorTest(self):
+    def testKeywordError(self):
         with self.assertRaises(KeywordNotFound):
             self.t.search.searchKeyword('TESTSETETS')
 
-    def movieSearchTest(self):
+    def testMovieSearch(self):
         assert type(self.t.search.searchMovie("John Wick")) == dict
 
-    def movieErrorTest(self):
+    def testMovieError(self):
         with self.assertRaises(MovieNotFound):
             self.t.search.searchMovie('TESTSETETS')
 
-    def multiSearchTest(self):
+    def testMultiSearch(self):
         assert type(self.t.search.searchMulti("Bleach")) == dict
 
-    def multiErrorTest(self):
+    def testMultiError(self):
         with self.assertRaises(MultiNotFound):
             self.t.search.searchMulti('TESTSETETS')
 
-    def personSearchTest(self):
+    def testPersonSearch(self):
         assert type(self.t.search.searchPerson("Keanu Reeves")) == dict
 
-    def personErrorTest(self):
+    def testPersonError(self):
         with self.assertRaises(PersonNotFound):
             self.t.search.searchPerson('TESTSETETS')
 
-    def tvSearchTest(self):
+    def testTVSearch(self):
         assert type(self.t.search.searchTV("Thriller")) == dict
 
-    def tvErrorTest(self):
+    def testTVError(self):
         with self.assertRaises(TVNotFound):
             self.t.search.searchTV('TESTSETETS')
 
