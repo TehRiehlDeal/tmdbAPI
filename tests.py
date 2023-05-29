@@ -1,10 +1,10 @@
 from tmdbAPI import TMDB, ShowNotFound, InvalidInput
+from classes.search import CollectionNotFound, CompanyNotFound, KeywordNotFound, MovieNotFound, MultiNotFound, PersonNotFound, TVNotFound
 import unittest
 import sys
 sys.path.append("..")
 
-
-class TestGetShow(unittest.TestCase):
+class SearchTest(unittest.TestCase):
 
     def setUp(self):
         self.t = TMDB()
@@ -12,34 +12,54 @@ class TestGetShow(unittest.TestCase):
     def tearDown(self):
         self.t.session.close()
 
-    # Test to see if its working correctly
-    def testA(self):
-        assert type(self.t.getShow("Mythbusters")) == dict
+    def collectionSearchTest(self):
+        assert type(self.t.search.searchCollection("Thriller")) == dict
 
-    # Test to see if showNotFound is raised correctly
-    def testB(self):
-        # self.failUnlessRaises(showNotFound, self.t.getShow("TETSTSETSTSETT"))
-        with self.assertRaises(ShowNotFound):
-            self.t.getShow('TESTSETETS')
+    def collectionErrorTest(self):
+        with self.assertRaises(CollectionNotFound):
+            self.t.search.searchCollection('TESTSETETS')
 
-    # Tests to see if invalidInput is raised correctly
-    def testC(self):
-        with self.assertRaises(InvalidInput):
-            self.t.getShow(-1)
+    def companySearchTest(self):
+        assert type(self.t.search.searchCompany("Warner")) == dict
 
-    def testD(self):
-        with self.assertRaises(InvalidInput):
-            self.t.getShow({'test': "test"})
+    def companyErrorTest(self):
+        with self.assertRaises(CompanyNotFound):
+            self.t.search.searchCompany('TESTSETETS')
 
-    def testE(self):
-        with self.assertRaises(InvalidInput):
-            assert self.t.getShow(["a", "b", "c"])
+    def keywordSearchTest(self):
+        assert type(self.t.search.searchKeyword("Thriller")) == dict
 
-    # Tests to see if a show can be successfully found based on an alias.
-    # In this case the alias is To aru Majutsu no Index, but it is being matched
-    # by string likeness.
-    def testF(self):
-        assert type(self.t.getShow("Toaru Majutsu no Index")) == dict
+    def keywordErrorTest(self):
+        with self.assertRaises(KeywordNotFound):
+            self.t.search.searchKeyword('TESTSETETS')
+
+    def movieSearchTest(self):
+        assert type(self.t.search.searchMovie("John Wick")) == dict
+
+    def movieErrorTest(self):
+        with self.assertRaises(MovieNotFound):
+            self.t.search.searchMovie('TESTSETETS')
+
+    def multiSearchTest(self):
+        assert type(self.t.search.searchMulti("Bleach")) == dict
+
+    def multiErrorTest(self):
+        with self.assertRaises(MultiNotFound):
+            self.t.search.searchMulti('TESTSETETS')
+
+    def personSearchTest(self):
+        assert type(self.t.search.searchPerson("Keanu Reeves")) == dict
+
+    def personErrorTest(self):
+        with self.assertRaises(PersonNotFound):
+            self.t.search.searchPerson('TESTSETETS')
+
+    def tvSearchTest(self):
+        assert type(self.t.search.searchTV("Thriller")) == dict
+
+    def tvErrorTest(self):
+        with self.assertRaises(TVNotFound):
+            self.t.search.searchTV('TESTSETETS')
 
 if __name__ == "__main__":
     unittest.main()
