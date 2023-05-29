@@ -106,7 +106,7 @@ class Search:
         r = self.session.get(url, headers=self.headers, params=params).json()
         error = r.get('total_results') == 0
         if error:
-            raise CompanyNotFound("Company was not found, please try again")
+            raise KeywordNotFound("Keyword was not found, please try again")
         return r
 
     def searchMovie(self, query, includeAdult=False, language="en-US", primaryReleaseYear="", page=1, region="", year=""):
