@@ -1,3 +1,4 @@
+import os
 from tmdbAPI import TMDB, ShowNotFound, InvalidInput
 from classes.search import CollectionNotFound, CompanyNotFound, KeywordNotFound, MovieNotFound, MultiNotFound, PersonNotFound, TVNotFound
 import unittest
@@ -7,6 +8,7 @@ sys.path.append("..")
 class TestSearch(unittest.TestCase):
 
     def setUp(self):
+        os.environ["TMDB_API_KEY"] = "fake_key"
         self.t = TMDB()
 
     def tearDown(self):
