@@ -135,9 +135,11 @@ class Movie:
     base_url: str
     timeout: float = 10.0
     api_key: Optional[str] = None
+    session: Optional[Session] = None
 
     def __post_init__(self) -> None:
-        self._session: Session = requests.Session()
+       # If a session is supplied we reuse it; otherwise create a new one.
+        self._session: Session = self.session or requests.Session()
         self._session.headers.update({"Content-Type": "application/json"})
         if self.api_key:
             self._session.headers.update({"Authorization": f"Bearer {self.api_key}"})
