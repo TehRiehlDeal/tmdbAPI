@@ -2,6 +2,7 @@ import requests
 import sanction
 from classes.search import Search
 from difflib import SequenceMatcher
+from movies.movie import Movie
 
 # Exceptions
 
@@ -44,7 +45,7 @@ class TMDB:
         self.headers = {
             'Accept': 'application/json',
             'Accept-Language': 'en-US',
-            "Authorization": "Bearer {apikey}".format(apikey=apikey)
+            f"Authorization": f"Bearer {apikey}"
         }
 
         self.config = {}
@@ -58,6 +59,12 @@ class TMDB:
         self.session = requests.Session()
 
         self.search = Search(apikey=apikey, session=self.session)
+
+        self.movie = Movie(
+            base_url=self.config['apiURL'],
+            api_key=apikey,
+            session=self.session
+        )
 
     def getEpisodeName(self, name, seasonNum, epNum, accuracy=0.8, id=None):
         if type(name) is not str or type(seasonNum) is not int or type(epNum) is not int or seasonNum < 0 or epNum < 1:
