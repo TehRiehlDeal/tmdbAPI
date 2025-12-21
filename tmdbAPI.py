@@ -1,8 +1,10 @@
+from typing import Optional
 import requests
 import sanction
 from classes.search import Search
 from difflib import SequenceMatcher
 from movies.movie import Movie
+from settings import settings
 
 # Exceptions
 
@@ -41,16 +43,19 @@ class NoImagesFound(Error):
 
 class TMDB:
 
-    def __init__(self, apikey='eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3MjczNzI5MTZmZGM3Y2U3MDQ3YWMwOWYyNWRiYTQ3OSIsInN1YiI6IjYwNDg0N2RiNTQ1MDhkMDA3NzU4MzJhOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.YL-Dvu1RPqtnYkwReU5NdtQ-0umRvVkL0GC1zy_1k30'):
+    def __init__(self, *, api_key: Optional[str] = None) -> None:
+        self.api_key = api_key or settings.api_key
+        self.base_url = settings.base_url
+        self.timeout = settings.timeout
         self.headers = {
             'Accept': 'application/json',
             'Accept-Language': 'en-US',
-            f"Authorization": f"Bearer {apikey}"
+            f"Authorization": f"Bearer {self.api_key}"
         }
 
         self.config = {}
 
-        self.config['apikey'] = apikey
+        self.config['apikey'] = self.api_key
 
         self.config['apiURL'] = "https://api.themoviedb.org/3"
 
@@ -58,11 +63,12 @@ class TMDB:
 
         self.session = requests.Session()
 
-        self.search = Search(apikey=apikey, session=self.session)
+        self.search = Search(apikey=self.api_key, session=self.session)
 
         self.movie = Movie(
-            base_url=self.config['apiURL'],
-            api_key=apikey,
+            base_url=self.base_url,
+            timeout=self.timeout,
+            api_key=self.api_key,
             session=self.session
         )
 
