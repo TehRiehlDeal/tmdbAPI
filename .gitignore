@@ -2,3 +2,5 @@
 build/*
 dist/*
 tmdbAPI.egg-info/*
+.venv/
+.continue/
