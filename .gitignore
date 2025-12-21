@@ -4,3 +4,4 @@ dist/*
 tmdbAPI.egg-info/*
 .venv/
 .continue/
+.env
