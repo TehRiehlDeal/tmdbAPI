@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 from requests import Session, Response
@@ -103,7 +103,31 @@ class AlternativeTitles:
     id: int = 0
     titles: List[AlternativeTitle] = None
 
+@dataclass
+class Poster:
+    file_path: Optional[str] = None
 
+@dataclass
+class Value:
+    poster: Optional[Poster] = None
+
+@dataclass
+class ChangeItem:
+    id: str
+    action: str
+    time: str
+    iso_639_1: Optional[str] = None
+    iso_3166_1: Optional[str] = None
+    value: Optional[Value] = None
+
+@dataclass
+class Change:
+    key: str
+    items: List[ChangeItem] = None
+
+@dataclass
+class MovieChanges:
+    changes: List[Change] = None
 
 class MovieError(Exception):
     """Base exception for all errors raised by the Movie client."""
@@ -337,3 +361,72 @@ class Movie:
             id=raw_data.get("id", 0),
             titles=titles,
         )
+    
+    def get_movie_changes(self, movie_id: int, *, start_date: str | None = None,
+                      end_date: str | None = None, page: int = 1) -> MovieChanges:
+        """
+        Fetch and parse the payload from ``/movie/{movie_id}/changes``.
+        """
+
+        # Build the query parameters – all are optional
+        params: Dict[str, Any] = {"page": page}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
+
+        # Perform the request
+        response = self._request("GET", f"movie/{movie_id}/changes", params=params)
+
+        # ------------------------------------------------------------------
+        # Helper functions to convert nested dictionaries into dataclasses
+        # ------------------------------------------------------------------
+        def _make_poster(raw: Optional[Dict[str, Any]]) -> Optional[Poster]:
+            """
+            Convert a ``poster`` dict to a :class:`Poster` instance.
+            If the raw data is ``None`` or missing ``file_path``, ``None`` is returned.
+            """
+            if not raw or not isinstance(raw, dict):
+                return None
+            return Poster(file_path=raw.get("file_path"))
+
+        def _make_value(raw: Optional[Dict[str, Any]]) -> Optional[Value]:
+            """
+            Convert a ``value`` dict to a :class:`Value` instance.
+            """
+            if not raw or not isinstance(raw, dict):
+                return None
+            return Value(poster=_make_poster(raw.get("poster")))
+
+        def _make_item(raw: Dict[str, Any]) -> ChangeItem:
+            """
+            Convert a raw item dict into a :class:`ChangeItem` instance,
+            recursively converting ``value`` and its ``poster``.
+            """
+            return ChangeItem(
+                id=raw.get("id"),
+                action=raw.get("action"),
+                time=raw.get("time"),
+                iso_639_1=raw.get("iso_639_1"),
+                iso_3166_1=raw.get("iso_3166_1"),
+                value=_make_value(raw.get("value")),
+            )
+
+        def _make_change(raw: Dict[str, Any]) -> Change:
+            """
+            Convert a raw change dict into a :class:`Change` instance.
+            """
+            items_raw = raw.get("items") or []
+            items = [_make_item(item) for item in items_raw]
+            return Change(key=raw.get("key"), items=items)
+
+        # ------------------------------------------------------------------
+        # Parse the full response into a list of Change objects
+        # ------------------------------------------------------------------
+        changes_raw = response.get("changes") or []
+        changes: List[Change] = [_make_change(ch) for ch in changes_raw]
+
+        # ------------------------------------------------------------------
+        # Return the top‑level container
+        # ------------------------------------------------------------------
+        return MovieChanges(changes=changes)
