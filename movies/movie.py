@@ -129,6 +129,41 @@ class Change:
 class MovieChanges:
     changes: List[Change] = None
 
+@dataclass
+class CastMember:
+    adult: bool = True
+    gender: int = 0
+    id: int = 0
+    known_for_department: str = ""
+    name: str = ""
+    original_name: str = ""
+    popularity: float = 0.0
+    profile_path: str = ""
+    cast_id: int = 0
+    character: str = ""
+    credit_id: str = ""
+    order: int = 0
+
+@dataclass
+class CrewMember:
+    adult: bool = True
+    gender: int = 0
+    id: int = 0
+    known_for_department: str = ""
+    name: str = ""
+    original_name: str = ""
+    popularity: float = 0.0
+    profile_path: str = ""
+    credit_id: str = ""
+    department: str = ""
+    job: str = ""
+
+@dataclass
+class MovieCredits:
+    id: int = 0
+    cast: List[CastMember] = None
+    crew: List[CrewMember] = None
+
 class MovieError(Exception):
     """Base exception for all errors raised by the Movie client."""
 
@@ -430,3 +465,63 @@ class Movie:
         # Return the top‑level container
         # ------------------------------------------------------------------
         return MovieChanges(changes=changes)
+    
+    def get_movie_credits(
+        self,
+        movie_id: int,
+        *,
+        language: str = "en-US",
+    ) -> MovieCredits:
+        """
+        GET /movie/{movie_id}/credits
+
+        :param movie_id: ID of the movie (int32, required)
+        :param language: Language of the result (string, defaults to ``en‑US``)
+        :return: :class:`MovieCredits` instance
+        """
+        # Build query parameters
+        params: Dict[str, Any] = {"language": language}
+
+        # Perform the HTTP call
+        raw = self._request("GET", f"movie/{movie_id}/credits", params=params)
+
+        # ---------- Helper functions -----------------------------------------
+        def _make_cast_member(raw: Dict[str, Any]) -> CastMember:
+            return CastMember(
+                adult=raw.get("adult", True),
+                gender=raw.get("gender", 0),
+                id=raw.get("id", 0),
+                known_for_department=raw.get("known_for_department", ""),
+                name=raw.get("name", ""),
+                original_name=raw.get("original_name", ""),
+                popularity=float(raw.get("popularity", 0)),
+                profile_path=raw.get("profile_path", ""),
+                cast_id=raw.get("cast_id", 0),
+                character=raw.get("character", ""),
+                credit_id=raw.get("credit_id", ""),
+                order=raw.get("order", 0),
+            )
+
+        def _make_crew_member(raw: Dict[str, Any]) -> CrewMember:
+            return CrewMember(
+                adult=raw.get("adult", True),
+                gender=raw.get("gender", 0),
+                id=raw.get("id", 0),
+                known_for_department=raw.get("known_for_department", ""),
+                name=raw.get("name", ""),
+                original_name=raw.get("original_name", ""),
+                popularity=float(raw.get("popularity", 0)),
+                profile_path=raw.get("profile_path", ""),
+                credit_id=raw.get("credit_id", ""),
+                department=raw.get("department", ""),
+                job=raw.get("job", ""),
+            )
+
+        # ---------- Parse the response ----------------------------------------
+        cast_raw = raw.get("cast") or []
+        crew_raw = raw.get("crew") or []
+
+        cast = [_make_cast_member(c) for c in cast_raw]
+        crew = [_make_crew_member(c) for c in crew_raw]
+
+        return MovieCredits(id=raw.get("id", 0), cast=cast, crew=crew)
