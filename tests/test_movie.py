@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 from movies.movie import Movie, MovieError, MovieNotFoundError, \
     MovieAuthenticationError, MovieServerError, Genre, ProductionCompany, \
     ProductionCountry, SpokenLanguage, Rated, AccountState, AlternativeTitle, \
-    AlternativeTitles
+    AlternativeTitles, MovieChanges
 
 
 @pytest.fixture
@@ -155,6 +155,96 @@ def test_get_alternative_titles_parsing(dummy_movie):
     assert alt.titles[0].title == "Alt Title 1"
     assert alt.titles[1].type == "TV"
 
+def test_get_movie_changes_parsing(dummy_movie):
+    """
+    Verify that :meth:`Movie.get_movie_changes` correctly parses a
+    realistic JSON payload from the ``/movie/{movie_id}/changes`` endpoint.
+    """
+    # A realistic, but minimal, payload that matches the spec you gave.
+    payload = {
+        "changes": [
+            {
+                "key": "title",
+                "items": [
+                    {
+                        "id": "123",
+                        "action": "updated",
+                        "time": "2023-10-01T12:00:00Z",
+                        "iso_639_1": "en",
+                        "iso_3166_1": "US",
+                        "value": {
+                            "poster": {"file_path": "/poster/path.jpg"}
+                        }
+                    },
+                    {
+                        "id": "124",
+                        "action": "deleted",
+                        "time": "2023-09-15T08:30:00Z",
+                        # missing `value` – should default to ``None``
+                    }
+                ],
+            },
+            {
+                "key": "release_date",
+                "items": [
+                    {
+                        "id": "125",
+                        "action": "added",
+                        "time": "2023-09-20T10:00:00Z",
+                        "value": {
+                            # For the release_date change, TMDB typically returns
+                            # a string directly, but the spec only mentions
+                            # a generic ``value`` object – we keep it empty.
+                            "poster": None
+                        }
+                    }
+                ],
+            }
+        ]
+    }
+
+    # Stub the underlying request – it will assert the endpoint
+    dummy_movie._request = stub_request("movie/42/changes", payload)
+
+    # Call the method (no date filters, default page 1)
+    changes_obj = dummy_movie.get_movie_changes(42)
+
+    # ------------------------------------------------------------
+    # Assertions – you can extend or adapt them as you wish
+    # ------------------------------------------------------------
+    assert isinstance(changes_obj, MovieChanges)
+    assert len(changes_obj.changes) == 2
+
+    # First change: title
+    title_change = changes_obj.changes[0]
+    assert title_change.key == "title"
+    assert len(title_change.items) == 2
+
+    item1 = title_change.items[0]
+    assert item1.id == "123"
+    assert item1.action == "updated"
+    assert item1.time == "2023-10-01T12:00:00Z"
+    assert item1.iso_639_1 == "en"
+    assert item1.iso_3166_1 == "US"
+    assert item1.value.poster.file_path == "/poster/path.jpg"
+
+    # Second item (deleted, no poster)
+    item2 = title_change.items[1]
+    assert item2.id == "124"
+    assert item2.action == "deleted"
+    assert item2.value is None  # because the payload omitted it
+
+    # Second change: release_date
+    rel_change = changes_obj.changes[1]
+    assert rel_change.key == "release_date"
+    assert len(rel_change.items) == 1
+    rel_item = rel_change.items[0]
+    assert rel_item.id == "125"
+    assert rel_item.action == "added"
+    assert rel_item.time == "2023-09-20T10:00:00Z"
+    # The ``value`` field was present but empty – our dataclass should
+    # still produce a ``Value`` object with ``poster=None``.
+    assert rel_item.value.poster is None
 
 # ------------------------------------------------------------
 # Error‑handling tests
