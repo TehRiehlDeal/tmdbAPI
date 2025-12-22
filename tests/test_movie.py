@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 from movies.movie import Movie, MovieError, MovieNotFoundError, \
     MovieAuthenticationError, MovieServerError, Genre, ProductionCompany, \
     ProductionCountry, SpokenLanguage, Rated, AccountState, AlternativeTitle, \
-    AlternativeTitles, MovieChanges
+    AlternativeTitles, MovieChanges, MovieCredits
 
 
 @pytest.fixture
@@ -298,3 +298,65 @@ def test_request_raises_server_error(dummy_movie):
 
     with pytest.raises(MovieServerError):
         dummy_movie.get_movie_details(999)
+
+def test_get_movie_credits_parsing(dummy_movie):
+    """
+    Verify that :meth:`Movie.get_movie_credits` parses the JSON returned by
+    ``/movie/{movie_id}/credits`` correctly.
+    """
+    payload = {
+        "id": 42,
+        "cast": [
+            {
+                "adult": False,
+                "gender": 2,
+                "id": 1001,
+                "known_for_department": "Acting",
+                "name": "John Doe",
+                "original_name": "John Doe",
+                "popularity": 12.34,
+                "profile_path": "/profiles/john_doe.jpg",
+                "cast_id": 5,
+                "character": "Hero",
+                "credit_id": "52fe4e0b2e0a265c350b0f8a",
+                "order": 0,
+            }
+        ],
+        "crew": [
+            {
+                "adult": False,
+                "gender": 1,
+                "id": 2002,
+                "known_for_department": "Directing",
+                "name": "Jane Smith",
+                "original_name": "Jane Smith",
+                "popularity": 7.89,
+                "profile_path": "/profiles/jane_smith.jpg",
+                "credit_id": "52fe4e0c2e0a265c350b0f8b",
+                "department": "Directing",
+                "job": "Director",
+            }
+        ],
+    }
+
+    dummy_movie._request = stub_request("movie/42/credits", payload)
+
+    credits = dummy_movie.get_movie_credits(42)
+
+    # ---------- Assertions --------------------------------------------
+    assert isinstance(credits, MovieCredits)
+    assert credits.id == 42
+    assert len(credits.cast) == 1
+    assert len(credits.crew) == 1
+
+    cast_member = credits.cast[0]
+    assert cast_member.id == 1001
+    assert cast_member.name == "John Doe"
+    assert cast_member.character == "Hero"
+    assert cast_member.adult is False
+
+    crew_member = credits.crew[0]
+    assert crew_member.id == 2002
+    assert crew_member.name == "Jane Smith"
+    assert crew_member.job == "Director"
+    assert crew_member.department == "Directing"
